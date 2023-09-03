@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.20.5.final using JasperReports Library version 6.20.5-3efcf2e67f959db3888d79f73dde2dbd7acb4f8e  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Simple_Blue_8" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="e45776be-bb56-4d01-bae0-36b036c9ee76">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="TimescaleDB"/>
+	<parameter name="device_identifier" class="java.lang.Long"/>
+	<parameter name="org_identifier" class="java.lang.Integer"/>
+	<parameter name="year_month" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[select  org_identifier
+			, device_identifier
+			, kpi_type_code
+			, to_char(time, 'YYYY-MM') as "year_month"
+			, sum(kpi_count) as total_kpi_observations
+			, kpi_alert_condition_text_last
+			, case
+			when substring(max(kpi_value_text_last), '[^\d.\-]+') = '/'
+				then round(avg(kpi_value_last),2) || substring(max(kpi_value_text_last), '[^\d.\-]+') || 24
+			when (substring(max(kpi_value_text_last), '[^\d.\-]+') = 'Actief') or (substring(max(kpi_value_text_last), '[^\d.\-]+') ilike '%blok%') 
+				then round(avg(kpi_value_last),2)|| ''
+			when substring(max(kpi_value_text_last), '[^\d.\-]+') = '/'
+				then round(avg(kpi_value_last),2) || substring(max(kpi_value_text_last), '[^\d.\-]+') || 24
+			else round(avg(kpi_value_last),2) || substring(max(kpi_value_text_last), '[^\d.]+')
+			end as average_kpi
+		, sum(kpi_alert_count) as total_alerts
+		
+from kpi_1d k1
+
+where 1=1
+	and (org_identifier = $P{org_identifier} or $P{org_identifier}  is null)
+	and (device_identifier = $P{device_identifier} or $P{device_identifier} is null)
+	and (to_char(time, 'YYYY-MM') = $P{year_month})
+	
+group by 1,2,3,4,6
+order by org_identifier desc, device_identifier]]>
+	</queryString>
+	<field name="org_identifier" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="org_identifier"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_identifier"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="kpi_1d"/>
+	</field>
+	<field name="device_identifier" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="device_identifier"/>
+		<property name="com.jaspersoft.studio.field.label" value="device_identifier"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="kpi_1d"/>
+	</field>
+	<field name="kpi_type_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="kpi_type_code"/>
+		<property name="com.jaspersoft.studio.field.label" value="kpi_type_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="kpi_1d"/>
+	</field>
+	<field name="year_month" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="year_month"/>
+		<property name="com.jaspersoft.studio.field.label" value="year_month"/>
+	</field>
+	<field name="total_kpi_observations" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="total_kpi_observations"/>
+		<property name="com.jaspersoft.studio.field.label" value="total_kpi_observations"/>
+	</field>
+	<field name="average_kpi" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="average_kpi"/>
+		<property name="com.jaspersoft.studio.field.label" value="average_kpi"/>
+	</field>
+	<field name="kpi_alert_condition_text_last" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="kpi_alert_condition_text_last"/>
+		<property name="com.jaspersoft.studio.field.label" value="kpi_alert_condition_text_last"/>
+	</field>
+	<field name="total_alerts" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.label" value="total_alerts"/>
+		<property name="com.jaspersoft.studio.field.name" value="total_alerts"/>
+	</field>
+	<group name="Group1" isStartNewPage="true">
+		<groupExpression><![CDATA[$F{device_identifier} + $F{year_month}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="62">
+			<frame>
+				<reportElement mode="Opaque" x="-20" y="-20" width="595" height="80" backcolor="#006699" uuid="07b4b079-9573-492a-9b55-c939b8a93196"/>
+				<staticText>
+					<reportElement x="20" y="20" width="234" height="43" forecolor="#FFFFFF" uuid="8ed00dc6-bced-46cd-bea8-613c46586ab3"/>
+					<textElement>
+						<font size="34" isBold="true"/>
+					</textElement>
+					<text><![CDATA[KPI Report]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="395" y="43" width="180" height="20" forecolor="#FFFFFF" uuid="24aeecaf-b2d7-46b0-915f-7f28391617fd"/>
+					<textElement textAlignment="Right">
+						<font size="14" isBold="false"/>
+					</textElement>
+					<text><![CDATA[Summary of performance]]></text>
+				</staticText>
+			</frame>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="4"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21">
+			<line>
+				<reportElement x="-20" y="20" width="595" height="1" forecolor="#666666" uuid="34de5196-9358-4d41-899f-a6b032377f1b"/>
+			</line>
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="0" width="30" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="76f54a46-9cb4-4772-8853-7d24209ac3e7">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b56f76aa-9724-46e1-910b-cc56c632275d"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Org. ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="30" y="0" width="50" height="20" printWhenGroupChanges="Group1" forecolor="#006699" backcolor="#E6E6E6" uuid="9bc54321-e2b9-45f7-a1e4-5129299347b8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="52ac371d-68ff-46dd-b671-d083d73b1ebe"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Device ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="80" y="0" width="126" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="92840a18-4105-40ba-aa84-19c6156d81cf">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="09f44a1b-db49-4949-b577-45bf45bdd013"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[KPI type code]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="206" y="0" width="54" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="1c44535c-33af-4b80-8d01-5d63ecb6bd57">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6498176b-0a08-43cc-9a50-34aa22a3ad26"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Year month]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="260" y="0" width="60" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="5aad63f8-ccea-46bf-b5a6-4e94774964fb">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="4949b3d6-9ee4-48d4-a9f1-84a9c38a5ddb"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Sum of obs.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="492" y="0" width="63" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="b3267839-9af8-4106-8d12-d717ebebcc1e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a37b5140-5f8c-4d87-94bc-d7b343db64e0"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total alerts]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="320" y="0" width="90" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="65295814-8ac2-4868-9ec4-69295260f9db">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a37b5140-5f8c-4d87-94bc-d7b343db64e0"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Average last value]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="410" y="0" width="82" height="20" forecolor="#006699" backcolor="#E6E6E6" uuid="b200813b-b8ca-4c76-9baa-cb2bae12fe7d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a37b5140-5f8c-4d87-94bc-d7b343db64e0"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.25"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Alert threshold]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="25">
+			<line>
+				<reportElement positionType="FixRelativeToBottom" x="0" y="21" width="555" height="1" uuid="ba9f39fb-ab57-4f58-8c2b-6ea75d74577f"/>
+			</line>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="0" y="0" width="30" height="20" uuid="676a6aeb-4e0b-484a-8e6d-68443282c794">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b56f76aa-9724-46e1-910b-cc56c632275d"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_identifier}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="30" y="0" width="50" height="20" uuid="deb1016b-7795-4e93-8db2-4c9cb6e6f670">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="52ac371d-68ff-46dd-b671-d083d73b1ebe"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{device_identifier}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="80" y="0" width="126" height="20" uuid="33e82d9a-217e-4d37-8f0b-9406f212d6c2">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="09f44a1b-db49-4949-b577-45bf45bdd013"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{kpi_type_code}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="206" y="0" width="54" height="20" uuid="68a7e6db-f86b-47f4-80f9-3b254b22bfa0">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6498176b-0a08-43cc-9a50-34aa22a3ad26"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{year_month}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="260" y="0" width="60" height="20" uuid="4c0d623f-6a93-4cbd-b5b7-2c39ffad4e76">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="4949b3d6-9ee4-48d4-a9f1-84a9c38a5ddb"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total_kpi_observations}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="492" y="0" width="63" height="20" uuid="05079ba0-1100-4738-ac21-6c6fc7e2ea73">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a37b5140-5f8c-4d87-94bc-d7b343db64e0"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total_alerts}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="320" y="0" width="90" height="20" uuid="2cc1ea14-e80e-4a12-975c-2b6d4a1dd0b7">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a37b5140-5f8c-4d87-94bc-d7b343db64e0"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{average_kpi}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="410" y="0" width="82" height="20" uuid="7ae92f40-e749-4606-91ed-51d2bc5c87af">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="a37b5140-5f8c-4d87-94bc-d7b343db64e0"/>
+				</reportElement>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{kpi_alert_condition_text_last}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band height="17">
+			<textField>
+				<reportElement mode="Opaque" x="0" y="4" width="515" height="13" backcolor="#E6E6E6" uuid="a6a39e2d-004d-46f8-bb83-f965eea047d4"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement mode="Opaque" x="515" y="4" width="40" height="13" backcolor="#E6E6E6" uuid="6c97599c-6d84-4587-a210-f9e6acc53a47"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="0" y="4" width="100" height="13" uuid="6672f5b7-0958-43e3-8814-d825a24b1d8e"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>
